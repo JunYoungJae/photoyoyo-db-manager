@@ -1,4 +1,0 @@
-
-module objectbox_flutter_libs.__Swift {
-  exclude header "objectbox_flutter_libs-Swift.h"
-}

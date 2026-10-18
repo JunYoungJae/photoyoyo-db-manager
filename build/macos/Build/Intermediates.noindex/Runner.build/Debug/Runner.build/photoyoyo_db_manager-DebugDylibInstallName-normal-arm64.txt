@@ -1,1 +1,0 @@
-@rpath/photoyoyo_db_manager.debug.dylib

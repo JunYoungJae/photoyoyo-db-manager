@@ -46,3 +46,10 @@ working_db/
 /working_db/
 =======
 >>>>>>> 91025c2912d797a26eb910d407b7ff410ac6c905
+
+/build/
+.dart_tool/
+*.mdb
+*.mdb-lock
+/test_db/
+/working_db/
