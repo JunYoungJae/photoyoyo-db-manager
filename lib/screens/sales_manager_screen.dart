@@ -21,21 +21,21 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
   List<SaleInfoDto> _sales = [];
   final Set<int> _selectedIds = <int>{};
 
-  String _status = 'DB 연결 대기 중';
+  String _status = 'Đang chờ kết nối cơ sở dữ liệu';
   bool _isLoading = false;
 
   bool get _allSelected =>
       _sales.isNotEmpty &&
       _sales.every((sale) => _selectedIds.contains(sale.id));
 
-  // DB 파일 선택
+  // Chọn tệp DB
   Future<void> _selectDbFile() async {
     if (_db.isConnected || _isLoading) return;
 
     try {
       final result = await fp.FilePicker.platform.pickFiles(
         type: fp.FileType.any,
-        dialogTitle: 'ObjectBox data.mdb 파일 선택',
+        dialogTitle: 'Chọn tệp ObjectBox data.mdb',
         allowMultiple: false,
       );
 
@@ -44,17 +44,17 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
       final selectedPath = result.files.single.path;
 
       if (selectedPath == null || selectedPath.isEmpty) {
-        throw Exception('선택한 파일의 경로를 확인할 수 없습니다.');
+        throw Exception('Không thể xác định đường dẫn của tệp đã chọn.');
       }
 
       final file = File(selectedPath);
 
       if (file.uri.pathSegments.last != 'data.mdb') {
-        throw Exception('data.mdb 파일을 선택해 주세요.');
+        throw Exception('Vui lòng chọn tệp data.mdb.');
       }
 
       if (!await file.exists()) {
-        throw Exception('선택한 DB 파일이 존재하지 않습니다.');
+        throw Exception('Tệp cơ sở dữ liệu đã chọn không tồn tại.');
       }
 
       if (!mounted) return;
@@ -63,35 +63,37 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
         _pathController.text = file.parent.path;
         _sales = [];
         _selectedIds.clear();
-        _status = 'DB 파일 선택 완료: ${file.parent.path}';
+        _status = 'Đã chọn tệp DB: ${file.parent.path}';
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _status = '파일 선택 오류: $e');
+      setState(() => _status = 'Lỗi chọn tệp: $e');
     }
   }
 
-  // DB 연결
+  // Kết nối DB
   void _connect() {
     if (_db.isConnected || _isLoading) return;
 
     final directory = _pathController.text.trim();
 
     if (directory.isEmpty) {
-      setState(() => _status = 'DB 파일을 먼저 선택해 주세요.');
+      setState(() => _status = 'Vui lòng chọn tệp DB trước.');
       return;
     }
 
     final dbFile = File('$directory${Platform.pathSeparator}data.mdb');
 
     if (!dbFile.existsSync()) {
-      setState(() => _status = '선택한 폴더에 data.mdb 파일이 없습니다.');
+      setState(
+        () => _status = 'Không tìm thấy tệp data.mdb trong thư mục đã chọn.',
+      );
       return;
     }
 
     setState(() {
       _isLoading = true;
-      _status = 'DB 연결 중...';
+      _status = 'Đang kết nối cơ sở dữ liệu...';
     });
 
     try {
@@ -103,11 +105,11 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
       setState(() {
         _sales = sales;
         _selectedIds.clear();
-        _status = 'DB 연결 성공 - 총 ${sales.length}건';
+        _status = 'Kết nối DB thành công - tổng cộng ${sales.length} giao dịch';
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _status = 'DB 연결 오류: $e');
+      setState(() => _status = 'Lỗi kết nối DB: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -115,7 +117,7 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
     }
   }
 
-  // 새로고침
+  // Làm mới
   void _refresh() {
     if (!_db.isConnected || _isLoading) return;
 
@@ -125,14 +127,15 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
       setState(() {
         _sales = sales;
         _selectedIds.clear();
-        _status = '조회 완료 - 총 ${sales.length}건';
+        _status =
+            'Tải dữ liệu thành công - tổng cộng ${sales.length} giao dịch';
       });
     } catch (e) {
-      setState(() => _status = '조회 오류: $e');
+      setState(() => _status = 'Lỗi tải dữ liệu: $e');
     }
   }
 
-  // 연결 해제
+  // Ngắt kết nối
   void _disconnect() {
     if (_isLoading) return;
 
@@ -142,14 +145,14 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
       setState(() {
         _sales = [];
         _selectedIds.clear();
-        _status = 'DB 연결 해제 완료';
+        _status = 'Đã ngắt kết nối DB';
       });
     } catch (e) {
-      setState(() => _status = '연결 해제 오류: $e');
+      setState(() => _status = 'Lỗi ngắt kết nối: $e');
     }
   }
 
-  // 전체 선택 / 전체 해제
+  // Chọn tất cả / bỏ chọn tất cả
   void _toggleSelectAll(bool selected) {
     setState(() {
       if (selected) {
@@ -162,7 +165,7 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
     });
   }
 
-  // 개별 선택
+  // Chọn từng giao dịch
   void _toggleSale(int id, bool selected) {
     setState(() {
       if (selected) {
@@ -173,13 +176,13 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
     });
   }
 
-  // DB 폴더 백업
-  // 반드시 ObjectBox 연결을 닫은 상태에서 호출
+  // Sao lưu thư mục DB
+  // Chỉ gọi sau khi đã đóng kết nối ObjectBox
   Future<String> _backupDatabase(String directory) async {
     final source = Directory(directory);
 
     if (!await source.exists()) {
-      throw Exception('DB 폴더가 존재하지 않습니다.');
+      throw Exception('Thư mục DB không tồn tại.');
     }
 
     final backupPath =
@@ -205,17 +208,17 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
     final backupDb = File('$backupPath${Platform.pathSeparator}data.mdb');
 
     if (!await backupDb.exists()) {
-      throw Exception('백업 파일 data.mdb를 확인할 수 없습니다.');
+      throw Exception('Không tìm thấy tệp data.mdb trong bản sao lưu.');
     }
 
     if (await backupDb.length() == 0) {
-      throw Exception('백업 DB 파일 크기가 0입니다.');
+      throw Exception('Tệp DB sao lưu có kích thước bằng 0.');
     }
 
     return backupPath;
   }
 
-  // 선택 Sale 일괄 삭제
+  // Xóa hàng loạt giao dịch đã chọn
   Future<void> _deleteSelectedSales() async {
     if (!_db.isConnected || _isLoading || _selectedIds.isEmpty) {
       return;
@@ -227,17 +230,17 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
       context: context,
       builder:
           (dialogContext) => AlertDialog(
-            title: const Text('Sale 및 Payment 삭제 확인'),
+            title: const Text('Xác nhận xóa giao dịch và thanh toán'),
             content: Text(
-              '선택한 $selectedCount건의 Sale을 삭제하시겠습니까?\n\n'
-              '각 Sale 레코드에 포함된 Payment JSON도 함께 삭제됩니다.\n\n'
-              '삭제 전에 DB 폴더를 자동으로 백업합니다.\n'
-              '삭제 후 원본 DB에서는 복구할 수 없습니다.',
+              'Bạn có chắc muốn xóa $selectedCount giao dịch đã chọn không?\n\n'
+              'Dữ liệu thanh toán (JSON) trong mỗi giao dịch cũng sẽ bị xóa.\n\n'
+              'Thư mục DB sẽ được tự động sao lưu trước khi xóa.\n'
+              'Không thể khôi phục dữ liệu đã xóa từ DB gốc.',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('취소'),
+                child: const Text('Hủy'),
               ),
               FilledButton.icon(
                 style: FilledButton.styleFrom(
@@ -246,7 +249,7 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
                 ),
                 onPressed: () => Navigator.pop(dialogContext, true),
                 icon: const Icon(Icons.delete_forever),
-                label: const Text('삭제 확인'),
+                label: const Text('Xác nhận xóa'),
               ),
             ],
           ),
@@ -259,31 +262,31 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
 
     setState(() {
       _isLoading = true;
-      _status = 'DB 백업 준비 중...';
+      _status = 'Đang chuẩn bị sao lưu DB...';
     });
 
     String? backupPath;
     bool deletionStarted = false;
 
     try {
-      // DB를 닫아 일관된 상태에서 백업
+      // Đóng DB trước khi sao lưu để đảm bảo tính nhất quán
       _db.closeDatabase();
 
       if (!mounted) return;
-      setState(() => _status = 'DB 백업 중...');
+      setState(() => _status = 'Đang sao lưu DB...');
 
       backupPath = await _backupDatabase(directory);
 
-      // 백업 성공 후 다시 연결
+      // Kết nối lại sau khi sao lưu thành công
       if (!mounted) return;
-      setState(() => _status = 'DB 재연결 중...');
+      setState(() => _status = 'Đang kết nối lại DB...');
 
       _db.openDatabase(directory);
 
-      // 선택한 ObjectBox ID를 기준으로 일괄 삭제
+      // Xóa hàng loạt theo ObjectBox ID đã chọn
       if (!mounted) return;
       setState(() {
-        _status = '${ids.length}건의 Sale 및 Payment 삭제 중...';
+        _status = 'Đang xóa ${ids.length} giao dịch và dữ liệu thanh toán...';
       });
 
       deletionStarted = true;
@@ -297,17 +300,17 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
         _sales = remainingSales;
         _selectedIds.clear();
         _status =
-            '삭제 완료: $deletedCount건\n'
-            '남은 Sale: ${remainingSales.length}건\n'
-            '백업 위치: $backupPath';
+            'Đã xóa: $deletedCount giao dịch\n'
+            'Giao dịch còn lại: ${remainingSales.length} giao dịch\n'
+            'Vị trí sao lưu: $backupPath';
       });
     } catch (e) {
-      // 실패 시 재연결 시도
+      // Thử kết nối lại nếu có lỗi
       if (!_db.isConnected) {
         try {
           _db.openDatabase(directory);
         } catch (_) {
-          // 원래 오류를 유지
+          // Giữ nguyên lỗi ban đầu
         }
       }
 
@@ -315,8 +318,8 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
 
       setState(() {
         _status =
-            '${deletionStarted ? "삭제 처리 오류" : "백업/연결 오류"}: $e\n'
-            '${backupPath == null ? "백업 미완료" : "백업 위치: $backupPath"}';
+            '${deletionStarted ? "Lỗi khi xóa dữ liệu" : "Lỗi sao lưu/kết nối"}: $e\n'
+            '${backupPath == null ? "Sao lưu chưa hoàn tất" : "Vị trí sao lưu: $backupPath"}';
       });
     } finally {
       if (mounted) {
@@ -325,7 +328,7 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
     }
   }
 
-  // JSON 상세보기
+  // Xem chi tiết JSON
   void _showDetails(SaleInfoDto sale) {
     String content = sale.data;
 
@@ -333,14 +336,14 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
       final decoded = jsonDecode(sale.data);
       content = const JsonEncoder.withIndent('  ').convert(decoded);
     } catch (_) {
-      // JSON이 아니면 원본 표시
+      // Hiển thị dữ liệu gốc nếu không phải JSON
     }
 
     showDialog<void>(
       context: context,
       builder:
           (dialogContext) => AlertDialog(
-            title: Text('판매정보: ${sale.saleNo}'),
+            title: Text('Thông tin giao dịch: ${sale.saleNo}'),
             content: SizedBox(
               width: 750,
               height: 500,
@@ -354,7 +357,7 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('닫기'),
+                child: const Text('Đóng'),
               ),
             ],
           ),
@@ -381,17 +384,17 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'ObjectBox 판매정보 관리',
+              'Quản lý giao dịch ObjectBox',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
-              'data.mdb 파일을 선택하여 Sale 및 Payment를 관리합니다.',
+              'Chọn tệp data.mdb để quản lý giao dịch và thanh toán.',
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 20),
 
-            // DB 경로와 연결 버튼
+            // Đường dẫn DB và các nút kết nối
             Row(
               children: [
                 Expanded(
@@ -399,8 +402,8 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
                     controller: _pathController,
                     readOnly: true,
                     decoration: const InputDecoration(
-                      labelText: 'ObjectBox DB 폴더 경로',
-                      hintText: 'DB 파일을 선택하세요',
+                      labelText: 'Đường dẫn thư mục ObjectBox DB',
+                      hintText: 'Vui lòng chọn tệp DB',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.folder),
                     ),
@@ -411,32 +414,32 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
                   onPressed:
                       _db.isConnected || _isLoading ? null : _selectDbFile,
                   icon: const Icon(Icons.folder_open),
-                  label: const Text('DB 파일 선택'),
+                  label: const Text('Chọn tệp DB'),
                 ),
                 const SizedBox(width: 10),
                 ElevatedButton.icon(
                   onPressed: _db.isConnected || _isLoading ? null : _connect,
                   icon: const Icon(Icons.storage),
-                  label: const Text('DB 연결'),
+                  label: const Text('Kết nối DB'),
                 ),
                 const SizedBox(width: 10),
                 OutlinedButton.icon(
                   onPressed: _db.isConnected && !_isLoading ? _refresh : null,
                   icon: const Icon(Icons.refresh),
-                  label: const Text('새로고침'),
+                  label: const Text('Làm mới'),
                 ),
                 const SizedBox(width: 10),
                 OutlinedButton.icon(
                   onPressed:
                       _db.isConnected && !_isLoading ? _disconnect : null,
                   icon: const Icon(Icons.link_off),
-                  label: const Text('연결 해제'),
+                  label: const Text('Ngắt kết nối'),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // 연결 상태
+            // Trạng thái kết nối
             Row(
               children: [
                 Icon(
@@ -449,23 +452,23 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
             ),
             const SizedBox(height: 20),
 
-            // 판매 목록 제목
+            // Tiêu đề danh sách giao dịch
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  '판매정보 목록',
+                  'Danh sách giao dịch',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '총 ${_sales.length}건',
+                  'Tổng cộng ${_sales.length} giao dịch',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
             const SizedBox(height: 12),
 
-            // 전체 선택 및 일괄 삭제
+            // Chọn tất cả và xóa hàng loạt
             Row(
               children: [
                 Checkbox(
@@ -475,10 +478,10 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
                           ? null
                           : (value) => _toggleSelectAll(value ?? false),
                 ),
-                const Text('전체 선택'),
+                const Text('Chọn tất cả'),
                 const SizedBox(width: 16),
                 Text(
-                  '${_selectedIds.length}건 선택',
+                  'Đã chọn ${_selectedIds.length} giao dịch',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
@@ -492,14 +495,14 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
                     foregroundColor: Colors.white,
                   ),
                   icon: const Icon(Icons.delete_forever),
-                  label: Text('선택 삭제 (${_selectedIds.length}건)'),
+                  label: Text('Xóa mục đã chọn (${_selectedIds.length})'),
                 ),
               ],
             ),
 
             const Divider(),
 
-            // 판매정보 목록
+            // Danh sách giao dịch
             Expanded(
               child:
                   _isLoading
@@ -507,7 +510,7 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
                       : _sales.isEmpty
                       ? const Center(
                         child: Text(
-                          '조회된 판매정보가 없습니다.',
+                          'Không có giao dịch nào để hiển thị.',
                           style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       )
@@ -530,14 +533,14 @@ class _SalesManagerScreenState extends State<SalesManagerScreen> {
                                         ),
                               ),
                               title: Text(
-                                '판매번호: ${sale.saleNo}',
+                                'Mã giao dịch: ${sale.saleNo}',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               subtitle: Text(
                                 'ObjectBox ID: ${sale.id}'
-                                '  |  매장 ID: ${sale.saleId}',
+                                '  |  ID cửa hàng: ${sale.saleId}',
                               ),
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () => _showDetails(sale),
