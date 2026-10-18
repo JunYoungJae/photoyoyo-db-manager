@@ -1,0 +1,41 @@
+
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.29.2'
+
+      - name: Enable Windows
+        run: flutter config --enable-windows-desktop
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create Windows project
+        run: flutter create --platforms=windows .
+
+      - name: Generate ObjectBox
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build EXE
+        run: flutter build windows --release
+
+      - name: Upload Windows files
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoYoYo_DB_Manager_Windows
+          path: build/windows/x64/runner/Release/
+          if-no-files-found: error
