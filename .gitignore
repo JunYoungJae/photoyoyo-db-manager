@@ -1,0 +1,45 @@
+
+# FVM Version Cache
+.fvm/
+# Photo YoYo database - do not upload
+test_db/
+working_db/
+*.mdb
+
+# Photo YoYo database
+test_db/
+working_db/
+*.mdb
+*.mdb-lock
+*.mdb.lock
+
+# Exclude ObjectBox database files
+*.mdb
+*.mdb-lock
+*.mdb.lock
+test_db/
+working_db/
+
+# Flutter generated files
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Local database files
+*.mdb
+*.mdb-lock
+*.mdb.lock
+test_db/
+working_db/
+
+# Flutter generated files
+/build/
+/.dart_tool/
+
+# ObjectBox local databases
+*.mdb
+*.mdb-lock
+*.mdb.lock
+/test_db/
+/working_db/
