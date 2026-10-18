@@ -1,0 +1,23 @@
+{
+  "version": 0,
+  "use-external-names": false,
+  "case-sensitive": false,
+  "roots": [{
+    "type": "directory",
+    "name": "/Users/stvmacbook4/Developer/photoyoyo-db-manager/build/macos/Build/Products/Debug/objectbox_flutter_libs/objectbox_flutter_libs.framework/Modules",
+    "contents": [{
+      "type": "file",
+      "name": "module.modulemap",
+      "external-contents": "/Users/stvmacbook4/Developer/photoyoyo-db-manager/build/macos/Build/Intermediates.noindex/Pods.build/Debug/objectbox_flutter_libs.build/unextended-module.modulemap",
+    }]
+    },
+    {
+    "type": "directory",
+    "name": "/Users/stvmacbook4/Developer/photoyoyo-db-manager/build/macos/Build/Products/Debug/objectbox_flutter_libs/objectbox_flutter_libs.framework/Headers",
+    "contents": [{
+      "type": "file",
+      "name": "objectbox_flutter_libs-Swift.h",
+      "external-contents": "/Users/stvmacbook4/Developer/photoyoyo-db-manager/build/macos/Build/Intermediates.noindex/Pods.build/Debug/objectbox_flutter_libs.build/unextended-interface-header.h",
+    }]
+  }]
+}
