@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - name: Checkout
@@ -30,7 +30,22 @@ jobs:
       - name: Generate ObjectBox
         run: dart run build_runner build --delete-conflicting-outputs
 
+      - name: Check Visual Studio
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -products * -property installationVersion
+
+      - name: Clean Windows build cache
+        shell: pwsh
+        run: |
+          if (Test-Path "build/windows") {
+            Remove-Item "build/windows" -Recurse -Force
+          }
+
       - name: Build EXE
+        shell: pwsh
+        env:
+          CMAKE_GENERATOR: Visual Studio 17 2022
         run: flutter build windows --release
 
       - name: Upload Windows files
